@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic 8 Ball - Ask Your Question</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f5dc 0%, #e6d7c3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #8b7355;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 500px;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(139,115,85,0.3);
+            color: #8b7355;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .magic-8-ball {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle at 30% 30%, #2d2d2d, #000);
+            border-radius: 50%;
+            margin: 2rem auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .magic-8-ball:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+        }
+
+        .magic-8-ball.shaking {
+            animation: shake 0.6s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+            10% { transform: translateX(-5px) translateY(-5px) rotate(-1deg); }
+            20% { transform: translateX(5px) translateY(-5px) rotate(1deg); }
+            30% { transform: translateX(-5px) translateY(5px) rotate(-1deg); }
+            40% { transform: translateX(5px) translateY(5px) rotate(1deg); }
+            50% { transform: translateX(-2px) translateY(-2px) rotate(-0.5deg); }
+            60% { transform: translateX(2px) translateY(-2px) rotate(0.5deg); }
+            70% { transform: translateX(-2px) translateY(2px) rotate(-0.5deg); }
+            80% { transform: translateX(2px) translateY(2px) rotate(0.5deg); }
+            90% { transform: translateX(-1px) translateY(-1px) rotate(-0.25deg); }
+        }
+
+        .answer-window {
+            width: 120px;
+            height: 60px;
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 3px solid #333;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .answer-text {
+            color: #00ff88;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 0.5rem;
+            text-shadow: 0 0 10px rgba(0,255,136,0.5);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .answer-text.show {
+            opacity: 1;
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border: 2px solid #d4c4a8;
+            border-radius: 25px;
+            margin-bottom: 1rem;
+            text-align: center;
+            background: #faf8f5;
+            color: #8b7355;
+            box-shadow: 0 5px 15px rgba(212,196,168,0.3);
+        }
+
+        .question-input:focus {
+            outline: none;
+            box-shadow: 0 5px 20px rgba(212,196,168,0.5);
+            border-color: #c7b299;
+        }
+
+        .ask-button {
+            background: linear-gradient(45deg, #f4a6cd, #e8b4cb);
+            color: #8b7355;
+            border: 2px solid #e8b4cb;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(244, 166, 205, 0.3);
+            margin: 0 0.5rem;
+        }
+
+        .ask-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(244, 166, 205, 0.5);
+            background: linear-gradient(45deg, #f19ec7, #e6a8c5);
+        }
+
+        .ask-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .clear-button {
+            background: linear-gradient(45deg, #b5d8d1, #a8d0c8);
+            color: #8b7355;
+            border: 2px solid #a8d0c8;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(181, 216, 209, 0.3);
+            margin: 0 0.5rem;
+        }
+
+        .clear-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(181, 216, 209, 0.5);
+            background: linear-gradient(45deg, #a8cfc8, #9bc7bf);
+        }
+
+        .history {
+            margin-top: 2rem;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(245, 245, 220, 0.7);
+            border: 2px solid #e6d7c3;
+            border-radius: 10px;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .history-item {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(250, 248, 245, 0.8);
+            border: 1px solid #e6d7c3;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .magic-8-ball {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .answer-window {
+                width: 100px;
+                height: 50px;
+            }
+            
+            .answer-text {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎱 Magic 8 Ball</h1>
+        <p class="subtitle">Ask a question and shake the ball for your answer!</p>
+        
+        <input type="text" 
+               class="question-input" 
+               id="questionInput" 
+               placeholder="Ask your yes/no question..." 
+               maxlength="100">
+        
+        <div class="magic-8-ball" id="magic8Ball">
+            <div class="answer-window">
+                <div class="answer-text" id="answerText">Ask a question</div>
+            </div>
+        </div>
+        
+        <div>
+            <button class="ask-button" id="askButton">Shake & Ask</button>
+            <button class="clear-button" id="clearButton">Clear History</button>
+        </div>
+        
+        <div class="history" id="history">
+            <h3>Question History</h3>
+            <div id="historyList">
+                <p style="opacity: 0.7; font-style: italic;">No questions asked yet...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Magic8Ball {
+            constructor() {
+                this.responses = [
+                    // Positive responses (from your original code)
+                    "Yes - definitely.",
+                    "It is decidedly so.",
+                    "Without a doubt.",
+                    "It is certain",
+                    "You may rely on it",
+                    "As I see it, yes",
+                    "Most likely",
+                    "Outlook good",
+                    "Yes",
+                    "Signs point to yes",
+                    
+                    // Negative responses (from your original code)
+                    "My sources say no.",
+                    "Outlook not so good.",
+                    "Very doubtful.",
+                    "Don't count on it",
+                    "My reply is no",
+                    "No way",
+                    "Absolutely not",
+                    "Not a chance",
+                    
+                    // Neutral responses (from your original code)
+                    "Reply hazy, try again.",
+                    "Ask again later.",
+                    "Better not tell you now.",
+                    "Cannot predict now",
+                    "Concentrate and ask again"
+                ];
+                
+                this.history = JSON.parse(localStorage.getItem('magic8BallHistory') || '[]');
+                this.initializeElements();
+                this.bindEvents();
+                this.displayHistory();
+            }
+            
+            initializeElements() {
+                this.questionInput = document.getElementById('questionInput');
+                this.magic8Ball = document.getElementById('magic8Ball');
+                this.answerText = document.getElementById('answerText');
+                this.askButton = document.getElementById('askButton');
+                this.clearButton = document.getElementById('clearButton');
+                this.historyList = document.getElementById('historyList');
+            }
+            
+            bindEvents() {
+                this.askButton.addEventListener('click', () => this.askQuestion());
+                this.magic8Ball.addEventListener('click', () => this.askQuestion());
+                this.clearButton.addEventListener('click', () => this.clearHistory());
+                
+                this.questionInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.askQuestion();
+                    }
+                });
+            }
+            
+            async askQuestion() {
+                const question = this.questionInput.value.trim();
+                
+                if (!question) {
+                    this.showMessage('Please ask a question first!');
+                    this.questionInput.focus();
+                    return;
+                }
+                
+                this.disableInput();
+                await this.shakeAndReveal(question);
+                this.enableInput();
+                this.questionInput.value = '';
+                this.questionInput.focus();
+            }
+            
+            async shakeAndReveal(question) {
+                // Start shaking animation
+                this.magic8Ball.classList.add('shaking');
+                this.answerText.classList.remove('show');
+                this.answerText.textContent = '...';
+                this.answerText.classList.add('loading');
+                
+                // Simulate API call delay
+                await this.delay(600);
+                
+                // Get response
+                const response = this.getRandomResponse();
+                
+                // Stop shaking and show answer
+                this.magic8Ball.classList.remove('shaking');
+                this.answerText.classList.remove('loading');
+                this.answerText.textContent = response;
+                this.answerText.classList.add('show');
+                
+                // Add to history
+                this.addToHistory(question, response);
+            }
+            
+            getRandomResponse() {
+                const randomIndex = Math.floor(Math.random() * this.responses.length);
+                return this.responses[randomIndex];
+            }
+            
+            addToHistory(question, answer) {
+                const timestamp = new Date().toLocaleString();
+                const entry = { question, answer, timestamp };
+                
+                this.history.unshift(entry);
+                
+                // Keep only last 10 entries
+                if (this.history.length > 10) {
+                    this.history = this.history.slice(0, 10);
+                }
+                
+                this.saveHistory();
+                this.displayHistory();
+            }
+            
+            displayHistory() {
+                if (this.history.length === 0) {
+                    this.historyList.innerHTML = '<p style="opacity: 0.7; font-style: italic;">No questions asked yet...</p>';
+                    return;
+                }
+                
+                this.historyList.innerHTML = this.history
+                    .map(entry => `
+                        <div class="history-item">
+                            <strong>Q:</strong> ${this.escapeHtml(entry.question)}<br>
+                            <strong>A:</strong> ${this.escapeHtml(entry.answer)}<br>
+                            <small style="opacity: 0.7;">${entry.timestamp}</small>
+                        </div>
+                    `).join('');
+            }
+            
+            clearHistory() {
+                if (confirm('Are you sure you want to clear your question history?')) {
+                    this.history = [];
+                    this.saveHistory();
+                    this.displayHistory();
+                }
+            }
+            
+            saveHistory() {
+                localStorage.setItem('magic8BallHistory', JSON.stringify(this.history));
+            }
+            
+            showMessage(message) {
+                this.answerText.textContent = message;
+                this.answerText.classList.add('show');
+                setTimeout(() => {
+                    this.answerText.textContent = 'Ask a question';
+                    this.answerText.classList.remove('show');
+                }, 3000);
+            }
+            
+            disableInput() {
+                this.askButton.disabled = true;
+                this.questionInput.disabled = true;
+            }
+            
+            enableInput() {
+                this.askButton.disabled = false;
+                this.questionInput.disabled = false;
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+        
+        // Initialize the Magic 8 Ball when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new Magic8Ball();
+        });
+    </script>
+</body>
+</html>
